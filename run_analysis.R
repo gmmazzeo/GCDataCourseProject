@@ -35,7 +35,7 @@ train <- data.table(read.table(file.path(dir, "train", "X_train.txt")))
 subjectTrain <- data.table(read.table(file.path(dir, "train", "subject_train.txt")))
 activityTrain <- data.table(read.table(file.path(dir, "train", "y_train.txt")))
 
-#'Then, similarly read the test data sets.
+#'Then, similarly, read the test data sets.
 
 test <- data.table(read.table(file.path(dir, "test", "X_test.txt")))
 subjectTest <- data.table(read.table(file.path(dir, "test", "subject_test.txt")))
@@ -52,12 +52,12 @@ dt <- rbind(train, test)
 setnames(subject, "V1", "subjectId")
 setnames(activity, "V1", "activityId")
 
-#'Now, the subject and activity tables (each wth one only column) are vertically bound 
+#'Now, the subject and activity tables (both having one only column) are vertically bound 
 #'to the table with the observations (previously obtained by horizontally binding the 
 #'training and test sets)
 dt <- cbind(subject, activity, dt)
 
-#'Set the key of the dt table, now containing the whole data set, thus having the
+#'The key of the dt table, now containing the whole data set, is set, thus sorting the
 #'rows sorted by subjectId and activityId
 setkey(dt, subjectId, activityId)
 
@@ -65,7 +65,7 @@ setkey(dt, subjectId, activityId)
 
 #'###Filtering the columns of the data set
 #'
-#'Load the names of the features
+#'Let's load the names of the features
 features <- data.table(read.table(file.path(dir, "features.txt")))
 setnames(features, names(features), c("featureId", "featureName"))
 
@@ -73,7 +73,8 @@ setnames(features, names(features), c("featureId", "featureName"))
 #'as required by step 2 of the assignment.
 features <- features[grepl("mean\\(\\)|std\\(\\)", featureName)]
 
-#'Create a new column containing codes "V"+id
+#'Create a new column containing codes "V"+id.
+#'
 #'These codes are also the names of the columuns of dt, starting from the 3rd
 features$featureCode <- features[, paste0("V", featureId)]
 
@@ -95,7 +96,7 @@ setnames(activityNames, names(activityNames), c("activityId", "activityName"))
 #'have the descriptive name of the activity in the dt table
 dt <- merge(dt, activityNames, by = "activityId")
 
-#Drop the activityId, that is no longer needed
+#'Drop the activityId, that is no longer needed
 dt <- dt[, names(dt)!="activityId", with=FALSE]
 
 #'Redefine the key of dt
@@ -108,8 +109,7 @@ setkey(dt, subjectId, activityName)
 #'Change the name of the colums of dt using the actual name of the features, as required by step 4.
 setnames(dt, features$featureCode, as.character(features$featureName))
 
-#'### Creating a tidy data table with the average of each feature 
-#'for each activity and each subject
+#'### Creating a tidy data table with the average of each feature for each activity and each subject
 #'
 #'Reshape the dt by turning it into a tidy table with 4 columns, 
 #'representing `subjectId`, `activityName`, `featureName`, and `value` 
@@ -126,8 +126,8 @@ dt3 <- dt2[, mean(value), by = key(dt2)]
 setnames(dt3, names(dt3)[4], c("mean"))
 
 #'Save the data on disk
-write.table(dt3, "tidy.csv", quote=FALSE, row.name=FALSE)
+write.table(dt3, "tidy.txt", quote=FALSE, row.name=FALSE)
 
 #'The README.md file can be automatically created using the
-#'command `spin` to run this scrip: `spin(run_analysis.R)`
+#'command `spin` to run this scrip: `spin("run_analysis.R")`
 #'The `spin` command is available in the `knitr` package.
